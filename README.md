@@ -49,7 +49,7 @@ O projeto foi desenvolvido como parte de uma apresentação técnica no evento *
    ```
 
 ## Acesse o link da apresentação:  
-   👉 [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+   👉 [https://alonsodecarli.github.io/demo-mysql-hibrido/](https://alonsodecarli.github.io/demo-mysql-hibrido/)
 
 
 ## Acesse o vídeo da apresentação:
