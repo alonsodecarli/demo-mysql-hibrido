@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechTalk - Réplicas de Leitura no MySQL</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary-blue: #1a73e8;
+            --dark-blue: #0d47a1;
+            --light-blue: #e8f0fe;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            overflow-x: hidden;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--primary-blue) !important;
+        }
+
+        .nav-link {
+            color: #555 !important;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-blue) !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-blue);
+            border-color: var(--dark-blue);
+        }
+
+        .section {
+            padding: 100px 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .section-title {
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .section-title:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -10px;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-blue);
+        }
+
+        .splash-screen {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: white;
+            text-align: center;
+        }
+
+        .splash-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .splash-logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .tech-icon {
+            font-size: 3rem;
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+        }
+
+        .slide {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tech-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.50;
+            z-index: 1;
+        }
+
+        .agenda-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary-blue);
+            background-color: var(--light-blue);
+            transition: all 0.3s ease;
+        }
+
+        .agenda-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            background-color: var(--dark-blue);
+            color: white;
+            padding: 30px 0;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .database-architecture {
+            width: 100%;
+            height: 500px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .consideration-card {
+            border-left: 4px solid var(--primary-blue);
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: var(--light-blue);
+        }
+
+
+        .slide-nav-left {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .slide-nav-left-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .slide-nav-left-btn:hover {
+            background-color: var(--dark-blue);
+            transform: translateY(-3px);
+            color: white;
+        }
+
+
+
+
+        .slide-nav {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .slide-nav-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .slide-nav-btn:hover {
+            background-color: var(--dark-blue);
+            transform: translateY(-3px);
+            color: white;
+        }
+
+        .tech-pattern {
+            background-image: radial-gradient(circle, var(--primary-blue) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.1;
+        }
+
+        .hexagon-bg {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="%231a73e8" opacity="0.1"><polygon points="50 0 100 25 100 75 50 100 0 75 0 25"></polygon></svg>');
+            background-size: 60px 60px;
+        }
+
+
+
+        .btn-delay {
+            opacity: 0;
+            animation: fadeIn 1s ease-in forwards;
+            animation-delay: 2s; /* Espera 2 segundos antes de aparecer */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body data-bs-spy="scroll" data-bs-target="#navbar">
+<!-- Navbar -->
+<nav id="navbar" class="navbar navbar-expand-lg navbar-light fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <i class="fas fa-database me-2"></i>TechTalk
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#splash">Início</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#slide1">Apresentação</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#slide2">Tópicos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#slide3">Introdução</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#slide4">Arquitetura</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Splash Screen -->
+<section id="splash" class="section splash-screen">
+    <div class="container">
+        <div class="splash-content">
+            <div class="splash-logo animate__animated animate__fadeIn">
+                <i class="fas fa-database"></i>
+            </div>
+            <h1 class="animate__animated animate__fadeIn animate__delay-1s">Réplicas de Leitura no MySQL</h1>
+            <p class="lead animate__animated animate__fadeIn animate__delay-2s">Otimizando performance e escalabilidade em bancos de dados</p>
+            <a href="#slide1" class="btn btn-light btn-lg mt-4 animate__animated animate__fadeIn animate__delay-3s">
+                Começar Apresentação <i class="fas fa-arrow-down ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Slide 1 - Capa -->
+<section id="slide1" class="section">
+    <div class="tech-bg" style="background-image: url('https://st4.depositphotos.com/10325396/25177/i/450/depositphotos_251775510-stock-photo-corridor-of-server-room-with.jpg');"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="slide">
+                    <h1 class="section-title">TechTalk - Réplicas de Leitura no MySQL</h1>
+                    <h3 class="mb-4">Linha de Pesquisa:</h3>
+                    <ul>
+                        <li class="lead">Explorando estratégias para melhorar performance e escalabilidade em bancos de dados MySQL;</li>
+                        <li class="lead">Explorando soluções de banco de dados para aplicações modernas.</li>
+                    </ul>
+                    <h4 class="mt-4"><strong>Apresentador:</strong> Alonso Decarli</h4>
+                    <h5><strong>Contato:</strong> alonso.decarli@viasoft.com.br</h5>
+                    <div class="mt-5">
+                        <div class="tech-icon">
+                            <i class="fas fa-database"></i>
+                            <i class="fas fa-server ms-3"></i>
+                            <i class="fas fa-network-wired ms-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="slide-nav">
+        <a href="#splash" class="slide-nav-btn" title="Voltar"><i class="fas fa-arrow-up"></i></a>
+        <a href="#slide2" class="slide-nav-btn" title="Próximo"><i class="fas fa-arrow-down"></i></a>
+    </div>
+
+</section>
+
+<!-- Slide 2 - Tópicos -->
+<section id="slide2" class="section">
+    <div class="tech-bg "></div>
+    <div class="tech-bg" style="background-image: url('https://images.unsplash.com/photo-1444927714506-8492d94b4e3d?q=80&w=3000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="slide">
+                    <h2 class="section-title">Tópicos</h2>
+                    <div class="agenda-list">
+                        <div class="agenda-item">
+                            <h5>1. Introdução</h5>
+                            <p class="mb-0">Conceitos básicos sobre réplicas de leitura no MySQL</p>
+                        </div>
+                        <div class="agenda-item">
+                            <h5>2. Arquiteturas de Banco de Dados</h5>
+                            <p class="mb-0">Estruturas de um ambiente de banco de dados e o fluxo das informações</p>
+                        </div>
+                        <div class="agenda-item">
+                            <h5>3. Estudos de Caso</h5>
+                            <p class="mb-0">Análise de diferentes abordagens e implementações</p>
+                        </div>
+                        <div class="agenda-item">
+                            <h5>4. Pontos de atenção</h5>
+                            <p class="mb-0">Cuidados no uso de réplicas de leitura</p>
+                        </div>
+                        <div class="agenda-item">
+                            <h5>5. Considerações Finais</h5>
+                            <p class="mb-0">Resumo e conclusões</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="slide-nav">
+        <a href="#slide1" class="slide-nav-btn" title="Anterior"><i class="fas fa-arrow-up"></i></a>
+        <a href="#slide3" class="slide-nav-btn" title="Próximo"><i class="fas fa-arrow-down"></i></a>
+    </div>
+</section>
+
+<!-- Slide 3 - Introdução -->
+<section id="slide3" class="section">
+    <div class="tech-bg" style="background-image: url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="slide">
+                    <h2 class="section-title">Introdução</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-question-circle text-primary me-2"></i>O que são réplicas de leitura no MySQL?</h5>
+                                    <p class="card-text">Réplicas de leitura são cópias secundárias de um banco de dados MySQL principal que permitem distribuir as operações de leitura, reduzindo a carga na instância principal.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-lightbulb text-primary me-2"></i>Por que usar réplicas de leitura?</h5>
+                                    <p class="card-text">Melhoram a performance para cargas de trabalho pesadas em leitura, aumentam a disponibilidade do sistema e permitem melhor escalabilidade horizontal.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-project-diagram text-primary me-2"></i>Arquitetura com réplicas de leitura</h5>
+                                    <p class="card-text">Uma arquitetura típica consiste em uma instância principal (master) que trata todas as operações de escrita e uma ou mais réplicas (slaves) que replicam os dados e tratam as operações de leitura.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="slide-nav">
+        <a href="#slide2" class="slide-nav-btn" title="Anterior"><i class="fas fa-arrow-up"></i></a>
+        <a href="#slide4" class="slide-nav-btn" title="Próximo"><i class="fas fa-arrow-down"></i></a>
+    </div>
+</section>
+
+<!-- Slide 4 - Arquitetura -->
+<section id="slide4" class="section">
+    <div class="tech-bg "></div>
+    <div class="tech-bg" style="background-image: url('https://images.unsplash.com/photo-1444927714506-8492d94b4e3d?q=80&w=3000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
+    <!--
+    <div class="tech-bg tech-pattern"></div> -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="slide">
+                    <h2 class="section-title mb-4">Arquitetura de Banco de Dados com réplicas de leitura</h2>
+
+
+                    <!-- Espaço para embedar o diagrama do draw.io
+                    <div class="database-architecture">
+                        <div class="text-center">
+                            <i class="fas fa-database fa-5x text-primary mb-3"></i>
+                            <p>Diagrama de Arquitetura MySQL com Réplicas</p>
+                            <small class="text-muted">(Artefato produzido no draw.io será embedado aqui)</small>
+                        </div>
+                    </div>
+                -->
+                    <div class=" mt-4">
+
+                        <figure style="width: 100%; display: flex; justify-content: center;">
+                            <img src="img/replicaMySQL3.png" alt="Diagrama de Arquitetura MySQL com Réplicas">
+                        </figure>
+
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Instância Principal</h5>
+                                    <p class="card-text">Responsável por todas as operações de escrita (INSERT, UPDATE, DELETE) e replicação para as réplicas.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Réplicas de Leitura</h5>
+                                    <p class="card-text">Cópias sincronizadas que processam operações de leitura (SELECT), reduzindo a carga na instância principal.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Balanceador</h5>
+                                    <p class="card-text">Opcionalmente, um balanceador de carga pode distribuir as requisições de leitura entre as réplicas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="slide-nav">
+        <a href="#slide3" class="slide-nav-btn" title="Anterior"><i class="fas fa-arrow-up"></i></a>
+        <a href="#slide5" class="slide-nav-btn" title="Próximo"><i class="fas fa-arrow-down"></i></a>
+    </div>
+</section>
+
+<!-- Slide 5 - Estudo de Caso Tradicional -->
+<section id="slide5" class="section">
+    <div class="tech-bg" style="background-image: url('https://images.unsplash.com/photo-1532619675605-1ede6c2ed2b0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="slide">
+                    <h2 class="section-title">Estudo de Caso: Cenário Tradicional</h2>
+                    <h4 class="mb-4">Leitura e Escrita na Instância Principal do MySQL</h4>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">Arquitetura</h5>
+                                    <ul>
+                                        <li>Todas as operações (leitura e escrita) na mesma instância</li>
+                                        <li>Sem réplicas de leitura</li>
+                                        <li>Configuração mais simples</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">Vantagens</h5>
+                                    <ul>
+                                        <li>Configuração simples</li>
+                                        <li>Sem preocupação com consistência eventual</li>
+                                        <li>Menor complexidade operacional</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Desvantagens</h5>
+                                    <ul>
+                                        <li>Ponto único de falha</li>
+                                        <li>Performance limitada para cargas pesadas de leitura</li>
+                                        <li>Escalabilidade vertical limitada</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Casos de Uso</h5>
+                                    <ul>
+                                        <li>Aplicações pequenas</li>
+                                        <li>Cargas de trabalho balanceadas entre leitura/escrita</li>
+                                        <li>Quando a consistência forte é crítica</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="slide-nav">
+        <a href="#slide4" class="slide-nav-btn" title="Anterior"><i class="fas fa-arrow-up"></i></a>
+        <a href="#slide6" class="slide-nav-btn" title="Próximo"><i class="fas fa-arrow-down"></i></a>
+    </div>
+</section>
+
+<!-- Slide 6 - Estudo de Caso 1 -->
+<section id="slide6" class="section">
+    <div class="tech-bg "></div>
+    <div class="tech-bg" style="background-image: url('https://images.unsplash.com/photo-1444927714506-8492d94b4e3d?q=80&w=3000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="slide">
+                    <h2 class="section-title">Estudo de Caso com Réplica de Leitura: Cenário 1</h2>
+                    <h4 class="mb-4">Toda as requisições de um determinado microserviço ou aplicação é direcionada para a Réplica de Leitura (Read-Only)</h4>
+
+
+                    <div class=" mt-4">
+
+                        <figure style="width: 100%; display: flex; justify-content: center;">
+                            <img src="img/replicaMySQL4.png" alt="Diagrama de Arquitetura MySQL com Réplicas">
+                        </figure>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Implementação</h5>
+                                    <ul>
+                                        <li>Configurar/Disponibilizar a réplica de leitura</li>
+                                        <li>Modificar a aplicação para direcionar SELECTs para réplica</li>
+                                        <li>Manter INSERT/UPDATE/DELETE na principal</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Benefícios</h5>
+                                    <ul>
+                                        <li>Redução significativa da carga na principal</li>
+                                        <li>Melhor performance para operações de leitura</li>
+                                        <li>Failover mais rápido em caso de falha</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="slide-nav">
+        <a href="#slide5" class="slide-nav-btn" title="Anterior"><i class="fas fa-arrow-up"></i></a>
+        <a href="#slide7" class="slide-nav-btn" title="Próximo"><i class="fas fa-arrow-down"></i></a>
+    </div>
+</section>
+
+<!-- Slide 7 - Estudo de Caso 2 -->
+<section id="slide7" class="section">
+    <div class="tech-bg" style="background-image: url('https://images.unsplash.com/photo-1723987251277-18fc0a1effd0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="slide">
+                    <h2 class="section-title">Estudo de Caso com Réplica de Leitura: Cenário 2</h2>
+                    <h4 class="mb-4">Leitura na Réplica e Escrita na Instância Principal</h4>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">Arquitetura Híbrida</h5>
+                                    <ul>
+                                        <li>Escritas sempre na instância principal</li>
+                                        <li>Leituras distribuídas entre principal e réplicas</li>
+                                        <li>Possível uso de balanceador de carga</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Vantagens</h5>
+                                    <ul>
+                                        <li>Balanceamento inteligente de carga</li>
+                                        <li>Pode priorizar consistência quando necessário</li>
+                                        <li>Flexibilidade na distribuição de consultas</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Estratégias de Implementação</h5>
+                                    <ul>
+                                        <li>Separar conexões de leitura/escrita na aplicação</li>
+                                        <li>Usar middlewares como ProxySQL ou MySQL Router</li>
+                                        <li>Implementar reconhecimento automático de tipo de query</li>
+                                        <li>Considerar consistência eventual para certas leituras</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="slide-nav">
+        <a href="#slide6" class="slide-nav-btn" title="Anterior"><i class="fas fa-arrow-up"></i></a>
+        <a href="#slide8" class="slide-nav-btn" title="Próximo"><i class="fas fa-arrow-down"></i></a>
+    </div>
+</section>
+
+<!-- Slide 8 - Considerações ao Estudo de Caso 2 -->
+<section id="slide8" class="section">
+    <div class="tech-bg "></div>
+    <div class="tech-bg" style="background-image: url('https://images.unsplash.com/photo-1444927714506-8492d94b4e3d?q=80&w=3000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="slide">
+                    <h2 class="section-title">Pontos de Atenção</h2>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="consideration-card">
+                                <h5><i class="fas fa-sync-alt text-primary me-2"></i>Replicação Assíncrona</h5>
+                                <p>O atraso na replicação pode causar inconsistências temporárias.</p>
+                            </div>
+
+                            <div class="consideration-card">
+                                <h5><i class="fas fa-exclamation-triangle text-primary me-2"></i>Tratamento de Falhas</h5>
+                                <p>É necessário planejar o failover automático e a promoção de réplicas.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="consideration-card">
+                                <h5><i class="fas fa-balance-scale text-primary me-2"></i>Balanceamento de Carga</h5>
+                                <p>Distribuir consultas uniformemente entre réplicas para evitar hotspots.</p>
+                            </div>
+
+                            <div class="consideration-card">
+                                <h5><i class="fas fa-shield-alt text-primary me-2"></i>Monitoramento</h5>
+                                <p>É essencial monitorar o log de replicação e a saúde das réplicas.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-primary mt-4">
+                        <h5><i class="fas fa-lightbulb me-2"></i>Melhores Práticas</h5>
+                        <ul>
+                            <li>    <span title="GTID (Global Transaction Identifier) é um identificador único global para cada transação em replicações MySQL. Facilita failover e evita duplicações.">
+                                    Usar <strong>GTIDs</strong> para facilitar o gerenciamento de replicação
+                                </span></li>
+                            <li>Implementar checks de saúde para réplicas</li>
+                            <li>Considerar leituras na instância principal para dados críticos que exigem consistência forte</li>
+                            <li>Testar o desempenho sob carga real antes de produção</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="slide-nav">
+        <a id="btn-81" href="#slide7" class="slide-nav-btn" title="Anterior"><i class="fas fa-arrow-up"></i></a>
+        <a id="btn-82" href="#slide9" class="slide-nav-btn" title="Próximo"><i class="fas fa-arrow-down"></i></a>
+    </div>
+</section>
+
+<!-- Slide 9 - Considerações Finais -->
+<section id="slide9" class="section">
+    <div class="tech-bg" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/d/d5/%D8%AC%D9%88%D8%AF%D8%A9_%D8%A7%D9%84%D8%A8%D9%8A%D8%A7%D9%86%D8%A7%D8%AA..jpg?20221220215330');"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="slide">
+                    <h2 class="section-title">Considerações Finais</h2>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">Resumo dos Principais Pontos</h5>
+                                    <ul>
+                                        <li>Réplicas de leitura melhoram performance e escalabilidade</li>
+                                        <li>Diferentes cenários atendem diferentes necessidades</li>
+                                        <li>O cenário híbrido oferece maior flexibilidade</li>
+                                        <li>Consistência eventual é uma consideração importante</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">Principais Vantagens</h5>
+                                    <ul>
+                                        <li>Melhor distribuição de carga</li>
+                                        <li>Maior disponibilidade do sistema</li>
+                                        <li>Possibilidade de escalamento horizontal</li>
+                                        <li>Resiliência a falhas</li>
+                                        <li>Redução de Custos</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-5">
+                        <h4 class="mb-4">Obrigado pela atenção!</h4>
+                        <a href="#splash" class="btn btn-primary btn-lg">
+                            <i class="fas fa-home me-2"></i>Voltar ao Início
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- Navigation -->
+    <div class="slide-nav">
+        <a id="btn-91" href="#slide8" class="slide-nav-btn btn-delay" title="Anterior"><i class="fas fa-arrow-up"></i></a>
+        <a id="btn-92" href="#footer" class="slide-nav-btn btn-delay" title="Próximo"><i class="fas fa-arrow-down"></i></a>
+    </div>
+
+</section>
+
+
+<!-- Navigation -->
+<div class="slide-nav-left">
+    <a href="#slide9" class="slide-nav-left-btn" title="Fim"><i class="fas fa-angle-double-down"></i></a>
+    <a href="#splash" class="slide-nav-left-btn" title="Início"><i class="fas fa-home"></i></a>
+</div>
+
+
+<!-- Footer -->
+<footer class="footer" id="footer">
+    <div class="container text-center">
+        <h3><i class="fas fa-database me-2"></i>TechTalk</h3>
+        <p>Explorando soluções de banco de dados para aplicações modernas</p>
+        <div class="mt-3">
+            <a href="#" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
+            <a href="#" class="text-white me-3"><i class="fab fa-linkedin fa-lg"></i></a>
+            <a href="#" class="text-white me-3"><i class="fab fa-github fa-lg"></i></a>
+            <a href="#" class="text-white"><i class="fas fa-envelope fa-lg"></i></a>
+        </div>
+        <p class="mt-3 mb-0">&copy; 2025 TechTalk - Viasoft. Todos os direitos reservados.</p>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Smooth scrolling for navigation
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    // Animation on scroll
+    window.addEventListener('scroll', function() {
+        const sections = document.querySelectorAll('.section');
+
+        sections.forEach(section => {
+            const sectionTop = section.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+
+            if (sectionTop < windowHeight - 100) {
+                section.classList.add('animate__animated', 'animate__fadeInUp');
+            }
+        });
+    });
+</script>
+</body>
+</html>
